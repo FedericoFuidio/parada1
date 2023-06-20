@@ -17,7 +17,7 @@ def parada(request):
 
     else:
         print("REALIZO REQUEST")
-        req = requests.get('http://127.0.0.1:8000/api/get_lineas')
+        req = requests.get('http://127.0.0.1:8000/api/get_mensajes')
         print(req)
         print("TERMINO REQUEST")
         my_json = req.content.decode('utf8').replace("'", '"')

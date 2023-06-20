@@ -7,7 +7,7 @@
         {% for l in lineas%}
                 <div class='linea'>
                     <h2>{{l.fields.linea}}</h2>
-                    <p>{{l.fields.date}}</p>
+                    <p>{{l.fields.proxima_parada}}: {{l.fields.tiempo_proxima_parada}}'</p>
                     <p class="empresa">{{l.fields.empresa}}</p>
                 </div>
         {% endfor %}
