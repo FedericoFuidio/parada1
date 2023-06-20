@@ -25,7 +25,9 @@ def parada(request):
         # Load the JSON to a Python list & dump it back out as formatted JSON
         data = json.loads(my_json)
         print(data)
+        lineas = json.loads(data)
+        for i in lineas:
+            print(i["fields"])
 
-        lineas = Linea.objects.all().order_by('date')
-
-    return render(request, 'parada/parada.html', {'lineas': lineas})
+        return render(request, 'parada/parada.html', {'lineas': lineas})
+    

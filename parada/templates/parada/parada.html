@@ -2,13 +2,13 @@
 {% extends 'base_page.html' %}
 
 {% block content %}
-        <h1>Bienvenido</h1>
+        <h1>Parada Av. Italia y Bolivia</h1>
         <div class='lineas'>
         {% for l in lineas%}
                 <div class='linea'>
-                    <h2>{{l.linea}}</h2>
-                    <p>{{l.date}}</p>
-                    <p class="empresa">{{l.empresa}}</p>
+                    <h2>{{l.fields.linea}}</h2>
+                    <p>{{l.fields.date}}</p>
+                    <p class="empresa">{{l.fields.empresa}}</p>
                 </div>
         {% endfor %}
         </div>

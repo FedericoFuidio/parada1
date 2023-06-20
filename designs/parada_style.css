@@ -1,4 +1,105 @@
-body {
-    background-color: #0af21f;
-    background: #0af21f;
+body{
+    padding-top: 0%;
+    background-color: #0f121f;
+    background-repeat: no-repeat;
+    color: #fff
+}
+
+body *{
+    font-family: monospace;
+}
+
+h1, h2, h3, h4, h5 {
+    font-weight: normal;
+    margin: 0;
+    font-family: monospace;
+}
+
+a, a:hover, a:visited{
+    color: #fff;
+    text-decoration: none;
+}
+
+.wrapper{
+    max-width: 960px;
+    margin: 0 auto;
+}
+
+div.wrapper{
+    text-align: left;
+    margin: 30px 0 0 10px auto;
+    font-size: 2.4em;
+}
+
+header{
+    display: grid;
+    grid-template-columns: 1fr;
+    padding: 2px 0;
+}
+
+nav{
+    justify-self: end;
+
+}
+
+
+nav li{
+    display: inline-block;
+    margin-left: 20px;
+}
+
+nav button{
+    background: none;
+    color: #fff;
+    cursor: pointer;
+    border: 0;
+    font-size: 1em;
+}
+
+.lineas{
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    grid-gap: 30px;
+}
+
+.linea{
+    padding: 10px;
+    border: 1px solid #00dba0;
+    position: relative;
+    padding-bottom: 40px;
+}
+
+.linea h2{
+    font-size: 1.2em;
+}
+
+.linea .empresa{
+    padding: 10px;
+    background: #00dba0;
+    position: absolute;
+    right: 0;
+    bottom: 0;
+    margin: 0;
+    color: #0f121f;
+}
+
+.site-form{
+    margin-top: 60px;
+    border: 1px solid #00dba0;
+    padding: 20px;
+}
+
+.site-form input, .site-form textarea{
+    display: block;
+    margin: 20px 0 0 0;
+    padding: 10px;
+}
+
+.site-form input[type="submit"]{
+    background: #00dba0;
+    border: 0;
+    color: #fff;
+    font-size: 0.5em;
+    border-radius: 4px;
+    margin: 10px 0;
 }
