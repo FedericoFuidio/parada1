@@ -2,13 +2,13 @@
 {% extends 'base_page.html' %}
 
 {% block content %}
-        <h1>Parada Av. Italia y Bolivia</h1>
+        <h1>Parada: {{parada_actual}}</h1>
         <div class='lineas'>
-        {% for l in lineas%}
+        {% for l in lineas_horarios%}
                 <div class='linea'>
-                    <h2>{{l.fields.linea}}</h2>
-                    <p>{{l.fields.proxima_parada}}: {{l.fields.tiempo_proxima_parada}}'</p>
-                    <p class="empresa">{{l.fields.empresa}}</p>
+                    <h2>{{l.linea}}</h2>
+                    <p>{{l.next_time}}'</p>
+                    <p class="empresa"></p>
                 </div>
         {% endfor %}
         </div>
