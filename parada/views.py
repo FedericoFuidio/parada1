@@ -4,7 +4,9 @@ from .models import Linea
 from . import forms
 import requests
 
-parada_actual = "Av. Italia y Bolivia"
+parada_actual = "parada2"
+
+tiempo_promedio_entre_paradas = 3
 
 # Create your views here.
 def parada(request):
@@ -25,7 +27,7 @@ def parada(request):
     
 
 def get_lineas():
-    print("REALIZO REQUEST")
+    print("REALIZO REQUEST get_lineas")
     req = requests.get('http://127.0.0.1:8000/api/get_lineas')
     print(req)
     print("TERMINO REQUEST")
@@ -42,15 +44,41 @@ def get_lineas():
         for k in l['fields']['recorrido'].keys():
             parada = l['fields']['recorrido'][k]
             if parada == parada_actual:
-                lineas.append(l['fields']['linea'])
+                lineas.append({
+                    'linea': l['fields']['linea'],
+                    'recorrido': l['fields']['recorrido']
+                    })
                 break
-
-    print(lineas)
 
     return lineas
 
+def list_lineas(lineas):
+    lista = []
+    for l in lineas:
+        lista.append(l['linea'])
+
+    # print('lista de lineas: ', lista)
+
+    return lista
+
+
+def get_lineas2():  #para probar api IM
+    print("REALIZO REQUEST lineas2")
+    req = requests.get('https://api.montevideo.gub.uy/api/transportepublico/buses/linevariants')
+    print(req)
+    print("TERMINO REQUEST")
+    my_json = req.content.decode('utf8').replace("'", '"')
+
+    # Load the JSON to a Python list & dump it back out as formatted JSON
+    # data = json.loads(my_json)
+    # # print(data)
+    # lineas = json.loads(data)
+    
+    return my_json
+
+
 def get_horarios(lineas):
-    print("REALIZO REQUEST")
+    print("REALIZO REQUEST mensajes")
     req = requests.get('http://127.0.0.1:8000/api/get_mensajes')
     print(req)
     print("TERMINO REQUEST")
@@ -60,55 +88,122 @@ def get_horarios(lineas):
     data = json.loads(my_json)
     # print(data)
     all_mensajes = json.loads(data)
+    
+    lista_lineas = list_lineas(lineas)
+    mensajes = list(filter(lambda k: k['fields']['linea'] in lista_lineas, all_mensajes))
+    
+    # print('MENSAJES:')
+    # for i in mensajes:
+    #     print(i['fields'])
 
-    mensajes = list(filter(lambda k: k['fields']['linea'] in lineas, all_mensajes))
-
-    for i in mensajes:
-        print(i['fields'])
-
-    lineas_horarios = []
-    for m in mensajes:
-        update(lineas_horarios,m)
+    lineas_horarios = update(lineas, mensajes)
         
     # print("lineas_horarios", lineas_horarios)
 
     return lineas_horarios
 
-def update(lineas_horarios, mensaje):
+def update(lineas, mensajes):
     
-    linea = mensaje['fields']['linea']
-    timestamp = mensaje['fields']['date']
-    next_time = mensaje['fields']['tiempo_proxima_parada']
-    
-    if len(lineas_horarios) == 0:
-        lineas_horarios.append({
-               'linea': linea,
-               'last_update_time': timestamp,
-               'next_time': next_time
-            })
-    else:
-        l_exists = False
-        for l in lineas_horarios:
-            
-            if l['linea'] == linea and timestamp > l['last_update_time']:
-                l['next_time'] = next_time
-                l['last_update_time'] = timestamp
-                l_exists = True
-                    # estimated_time = 0
-			        # start_count = false
-			        # for p_item in l.recorrido.paradas_list: # recorrer en sentido contrario al omnibus
-				    #     if start_count:
-					#         estimated_time += p_item[1]
-				    #     if p_item[0] == response["prox_parada"]:
-					#         start_count = true
-					#         estimated_time += tiempo_prox_parada
- 
-        if not l_exists:
+    lineas_horarios = []
+
+    for m in mensajes:
+        linea_name = m['fields']['linea']
+        timestamp = m['fields']['date']
+        next_time = m['fields']['tiempo_proxima_parada']
+        prox_parada = m['fields']['proxima_parada']
+
+        linea = None
+        for l in lineas:
+            if l['linea'] == linea_name:
+                linea = l
+                break
+
+        if linea == None:
+            continue
+        # else:
+        #     print("linea es: ", linea)
+
+        if not check_parada(prox_parada,linea): # omnibus que ya paso por la parada
+            # print('YA PASO')
+            continue
+        
+        if len(lineas_horarios) == 0:
             lineas_horarios.append({
-                 'linea': linea,
-                 'last_update_time': timestamp,
-                 'next_time': next_time,
-                 })
+                'linea': linea_name,
+                'last_update_time': timestamp,
+                'next_time': estimated_time(next_time, prox_parada, linea)
+                })
+        else:
+            linea_exists = False
+            for lh in lineas_horarios:
+                if lh['linea'] == linea['linea']:
+                    if timestamp > lh['last_update_time']:
+                        lh['next_time'] = estimated_time(next_time, prox_parada, linea)
+                        lh['last_update_time'] = timestamp
+                    linea_exists = True
+                    break
+
+            if not linea_exists:
+                lineas_horarios.append({
+                    'linea': linea_name,
+                    'last_update_time': timestamp,
+                    'next_time': estimated_time(next_time, prox_parada, linea)
+                    })
+                
+    return lineas_horarios
+    
+
+def estimated_time(next_time, prox_parada, linea):
+    
+    if prox_parada == parada_actual:
+        return next_time
+
+    time = 0
+    start_count = False
+    for k in linea['recorrido'].keys():
+        parada = linea['recorrido'][k]
+
+        if start_count:
+            time += tiempo_promedio_entre_paradas
+            if parada == parada_actual:
+                return time
+        
+        if not start_count:
+            if parada == prox_parada:
+                time += next_time
+                start_count = True
+
+    return time
+        
+
+                        # estimated_time = 0
+                        # start_count = false
+                        # for p_item in l.recorrido.paradas_list: # recorrer en sentido contrario al omnibus
+                        #     if start_count:
+                        #         estimated_time += p_item[1]
+                        #     if p_item[0] == response["prox_parada"]:
+                        #         start_count = true
+                        #         estimated_time += tiempo_prox_parada
+
+
+
+def check_parada(prox_parada, linea):
+
+    if prox_parada == parada_actual:
+        return True
+    
+    search_actual = False
+    for k in linea['recorrido'].keys():
+        parada = linea['recorrido'][k]
+        
+        if not search_actual:
+            if parada == prox_parada:
+                search_actual = True
+        if search_actual:
+            if parada == parada_actual:
+                return True
+    # print('prox_parada!!: ', prox_parada)
+    return False
 
 
 
